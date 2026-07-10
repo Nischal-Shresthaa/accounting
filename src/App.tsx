@@ -25,7 +25,7 @@ const accountOptions = [
   
 export default function App() {
   const [entries, setEntries] = useState<title[]>([
- //   { id: 1, accountTitle: "", debit: 0, credit: 0 },
+    { id: 1, accountTitle: "", debit: 0, credit: 0 },
   ]);
     const [note, setNote] = useState("");
 
@@ -55,6 +55,7 @@ export default function App() {
   }
  
   const isBalanced = totalDebit === totalCredit;
+
 
 
   function pdf() {
@@ -87,8 +88,15 @@ export default function App() {
     doc.setFontSize(16);
     doc.text("Date: " + new Date().toLocaleDateString(), 14, 22);
 
+    if (note) {
+      doc.text("Note:"+ note, 14, 29);
+    }
+
+
+
+
     autoTable(doc, {
-      startY: 28,
+      startY: 34,
       head: [["SN", "Account Name", "Debit", "Credit"]],
       body: tableData,
       foot: [["", "Total", totalDebit.toFixed(2), totalCredit.toFixed(2)]],
@@ -108,7 +116,7 @@ export default function App() {
     doc.save("journal_" + new Date().toISOString().slice(0, 10) + ".pdf");
   }
 
- console.log("hello")
+ 
 
 
       return (
@@ -179,11 +187,9 @@ export default function App() {
             </tbody>
           </table>
 
-          {isBalanced ? (
-            <p className="balanced">Balanced</p>
-          ) : (
-            <p className="unbalanced">Unbalanced</p>
-          )}
+          { <p className={isBalanced ? "balanced" : "unbalanced"}>{isBalanced? 'Balanced' : 'Unbalanced'}</p> }
+
+      
 
           <button onClick={downloadPdf} className="noprint">
             download
