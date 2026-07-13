@@ -146,8 +146,10 @@ export default function App() {
             data={csvData}
             filename={"journal_" + new Date().toISOString().slice(0, 10) + ".csv"}
                       className="noprint"
-                      >
-              Download
+                      ><button type='button' className='download'>
+                        Download
+
+                      </button>
                     </CSVLink>
                  </>
            );
