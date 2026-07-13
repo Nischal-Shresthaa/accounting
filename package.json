@@ -13,6 +13,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "react": "^19.2.7",
+    "react-csv": "^2.2.2",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {

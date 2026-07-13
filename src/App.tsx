@@ -1,14 +1,12 @@
-
-
-
 import { useState } from 'react';
 import "./App.css";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { CSVLink, CSVDownload } from "react-csv";
+
+
 
 interface title {
   id: number;
-  accountTitle: string;
+  Account: string;
   debit: number;
   credit: number;
 }
@@ -25,7 +23,7 @@ const accountOptions = [
   
 export default function App() {
   const [entries, setEntries] = useState<title[]>([
-    { id: 1, accountTitle: "", debit: 0, credit: 0 },
+    { id: 1, Account: "", debit: 0, credit: 0 },
   ]);
     const [note, setNote] = useState("");
 
@@ -38,9 +36,9 @@ export default function App() {
     });
 
     const lastRow = updated[updated.length -1];
-    const hasData = lastRow.accountTitle || lastRow.debit || lastRow.credit;
+    const hasData = lastRow.Account || lastRow.debit || lastRow.credit;
     if (lastRow.id=== id && hasData){
-      updated.push( {id: lastRow.id + 1, accountTitle: "", debit: 0, credit: 0});
+      updated.push( {id: lastRow.id + 1, Account: "", debit: 0, credit: 0});
     
     
     }
@@ -56,68 +54,21 @@ export default function App() {
  
   const isBalanced = totalDebit === totalCredit;
 
+  const rows = entries.filter(entry => entry.Account || entry.debit || entry.credit);
+  const csvBody = rows.map((entry, i) => [
+  i + 1,
+  entry.Account || "Account",
+  entry.debit ? entry.debit.toFixed(2) : "0.00",
+  entry.credit ? entry.credit.toFixed(2) : "0.00",
+]);
 
-
-  function pdf() {
-    const rows: title[] = [];
-    for (const entry of entries) {
-      if (entry.accountTitle || entry.debit || entry.credit) {
-        rows.push(entry);
-      }
-    }
-    return rows;
-  }
-
-  function downloadPdf() {
-    const rows = pdf();
-    if (!rows.length) {
-      alert("File is empty");
-      return;
-    }
-
-    const tableData = rows.map((entry, i) => [
-      i + 1,
-      entry.accountTitle || "Untitled",
-      entry.debit ? entry.debit.toFixed(2) : "-",
-      entry.credit ? entry.credit.toFixed(2) : "-",
-    ]);
-
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text("Journal", 14, 15);
-    doc.setFontSize(16);
-    doc.text("Date: " + new Date().toLocaleDateString(), 14, 22);
-
-    if (note) {
-      doc.text("Note:"+ note, 14, 29);
-    }
-
-
-
-
-    autoTable(doc, {
-      startY: 34,
-      head: [["SN", "Account Name", "Debit", "Credit"]],
-      body: tableData,
-      foot: [["", "Total", totalDebit.toFixed(2), totalCredit.toFixed(2)]],
-      theme: "grid",
-      footStyles: { fontStyle: "bold" },
-    });
-
-    const finalY = (doc as any).lastAutoTable?.finalY ?? 30;
-    doc.setFontSize(10);
-    if (isBalanced) {
-      doc.setTextColor(0, 0, 0);
-      doc.text("Balanced", 14, finalY + 10);
-    } else {
-      doc.setTextColor(128, 128, 128);
-      doc.text("Not balanced", 14, finalY + 10);
-    }
-    doc.save("journal_" + new Date().toISOString().slice(0, 10) + ".pdf");
-  }
-
- 
-
+  const csvData = [
+    ["SN", "Account", "Debit", "Credit"],
+    ...csvBody,
+    [ "", "Total", totalDebit.toFixed(2), totalCredit.toFixed(2) ],
+    [ "", isBalanced? "Status:Balanced": "Status:Unbalanced", "",""]
+  ];
+  
 
       return (
         <><div className="journal-entry">
@@ -187,13 +138,17 @@ export default function App() {
             </tbody>
           </table>
 
-          { <p className={isBalanced ? "balanced" : "unbalanced"}>{isBalanced? 'Balanced' : 'Unbalanced'}</p> }
+          { <p className={isBalanced ? "balanced" : ":unbalanced"}>{isBalanced? ':Balanced' : 'Unbalanced'}</p> }
 
       
 
-          <button onClick={downloadPdf} className="noprint">
-            download
-          </button>
-        </>
-      );
-    }
+          <CSVLink
+            data={csvData}
+            filename={"journal_" + new Date().toISOString().slice(0, 10) + ".csv"}
+                      className="noprint"
+                      >
+              Download
+                    </CSVLink>
+                 </>
+           );
+        }
